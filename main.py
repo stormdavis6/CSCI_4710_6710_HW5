@@ -166,8 +166,14 @@ def create_table(folder_of_files):
 def index():
     #Calling function, argument is path of folder where all CSV files are stored
     create_table(UPLOAD_FOLDER)
-    labels = util.cluster_user_data(sample_data['user_data'])
-    return render_template('index.html', labels_html=labels, column_html=column_names, data_html=sample_data['user_data'])
+    table_df = pd.read_sql_table(
+        'we_are_not_alone_no_nan',
+        con=engine
+    )
+    data = table_df.values
+    print(data)
+    labels = util.cluster_user_data(data)
+    return render_template('index.html', labels_html=labels, column_html=column_names, data_html=data)
 
 if __name__ == '__main__':
 	# set debug mode
