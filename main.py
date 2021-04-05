@@ -166,14 +166,21 @@ def create_table(folder_of_files):
 def index():
     #Calling function, argument is path of folder where all CSV files are stored
     create_table(UPLOAD_FOLDER)
+
     table_df = pd.read_sql_table(
         'we_are_not_alone_no_nan',
         con=engine
     )
-    data = table_df.values
-    print(data)
-    labels = util.cluster_user_data(data)
-    return render_template('index.html', labels_html=labels, column_html=column_names, data_html=data)
+    full_data = table_df.values
+
+    young_male_query = "select * from we_are_not_alone_no_nan where \"How old are you?\" <= 35 AND \"What is your gender?\" = \"Male\""
+    young_male_df = pd.read_sql(
+            young_male_query,
+            con=engine
+        )
+    young_male_data = young_male_df.values
+    labels = util.cluster_user_data(young_male_data)
+    return render_template('index.html', labels_html=labels, column_html=column_names, data_html=young_male_data)
 
 if __name__ == '__main__':
 	# set debug mode
