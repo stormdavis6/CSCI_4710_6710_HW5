@@ -1,9 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for
 import util
 import os
+import glob
 from os.path import join, dirname, realpath
 import pandas as pd
-
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Table,Column,Integer,String
+from sqlalchemy import MetaData
+from sqlalchemy.orm import mapper
 
 app = Flask(__name__)
 
@@ -29,20 +35,139 @@ column_names = ["index","What country do you live in?","How old are you?","What 
 
 UPLOAD_FOLDER = 'data'
 file_path = os.path.join(UPLOAD_FOLDER, 'we_are_not_alone_no_nan.csv')
+
+#SQL Alchemy setup
+
+#Create engine that will allow us to communicate with database
+engine=create_engine('sqlite:///we_are_not_alone_dbase.sqlite',echo=False)
+
+#Creating session which is the middle ground to talk to our engine
+Session=sessionmaker(bind=engine)
+session=Session()
+
+#Map which table in database will be related to each class
+Base=declarative_base()
+
+#Create a metadata instance
+#A metadata is an object container that will store attributes and name of table
+metadata=MetaData(engine)
+
+#Define structure of table
+class we_are_not_alone_table(object):
+    def __init__(self,number,description,ref_des):
+        self.index=index
+        self.country=country
+        self.age=age
+        self.gender=gender
+        self.fear=fear
+        self.anxious = anxious
+        self.angry = angry
+        self.happy = happy
+        self.sad = sad
+        self.emotion = emotion
+        self.cause = cause
+        self.meaning = meaning
+        self.occupation = occupation
+
+    def __repr__(self):
+        return f'{self.index,self.country,self.age,self.gender,self.fear,self.anxious,self.angry,self.happy,self.sad,self.emotion,self.cause,self.meaning,self.occupation}'
+
+#Declaring a table
+#Defining a function that defines table, we define this function so that we can keep table names dynamic
+#That is, we can have multiple tables in database and each table can have a different name
+def table_definition(table_name):
+    #Define table structure, here table_name varies
+    #We want to make table_define available outside function so we declare it as a function attribute
+    table_definition.table_define=Table(table_name,metadata,
+    Column(column_names[0],Integer,primary_key=True),
+    Column(column_names[1],String),
+    Column(column_names[2],Integer),
+    Column(column_names[3],String),
+    Column(column_names[4],Integer),
+    Column(column_names[5],Integer),
+    Column(column_names[6],Integer),
+    Column(column_names[7],Integer),
+    Column(column_names[8],Integer),
+    Column(column_names[9],String),
+    Column(column_names[10],String),
+    Column(column_names[11],String),
+    Column(column_names[12],String)
+    )
+
+    #Create table
+    #Note that we used the engine from function
+    metadata.create_all(engine)
+
+    #Use mapper to define components of class as well as table definition together at once
+    mapper(we_are_not_alone_table,table_definition.table_define,non_primary=True)
+
+#CREATING A DUMMY BLANK TABLE FOR PRIMARY MAPPER
+#This avoids error: Class already has a primary mapper defined
+#We made non_primary=True in table_definition function mapper
+#This is the work around I could use, maybe there is another way
+
+#Define table structure, here table_name varies
+table_define_dummy=Table('dummy_table',metadata,
+Column(column_names[0],Integer,primary_key=True),
+    Column(column_names[1],String),
+    Column(column_names[2],Integer),
+    Column(column_names[3],String),
+    Column(column_names[4],Integer),
+    Column(column_names[5],Integer),
+    Column(column_names[6],Integer),
+    Column(column_names[7],Integer),
+    Column(column_names[8],Integer),
+    Column(column_names[9],String),
+    Column(column_names[10],String),
+    Column(column_names[11],String),
+    Column(column_names[12],String)
+)
+
+#Create table
+metadata.create_all(engine)
+
+#Use mapper to define components of class as well as table definition together at once
+mapper(we_are_not_alone_table,table_define_dummy)
+
+#This function will create a separate table for each csv file, if you have multiple csv files
+#Name of table will be extracted from file name. File name contains product name.
+#Each table will be identified by product name
+# It will read each excel file in the folder and insert bom into table
+def create_table(folder_of_files):
+
+    #Get list of files in folder
+    files=glob.glob(os.path.join(folder_of_files,"*.csv"))
+
+
+    #Loop through all files in list
+    for file_name in files:
+
+        #Read file into dataframe
+        csv_data=pd.read_csv(file_name)
+
+        #Convert dataframe to list and store in same variable
+        csv_data=csv_data.values.tolist()
+
+        #Get table name from file name. This will be our table name.
+        table_name_from_file="we_are_not_alone_no_nan"
+
+        #Use table_definition function to define table structure
+        table_definition(table_name_from_file)
+
+        #Loop through list of lists, each list in create_bom_table.xls_data is a row
+        for row in csv_data:
+
+            #Each element in the list is an attribute for the table class
+            #Iterating through rows and inserting into table
+            conn=engine.connect()
+            conn.execute('INSERT OR IGNORE INTO ' + table_name_from_file + ' Values(?,?,?,?,?,?,?,?,?,?,?,?,?)', row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12])
+
 @app.route('/')
 def index():
-    #parseCSV(file_path)
+    #Calling function, argument is path of folder where all CSV files are stored
+    create_table(UPLOAD_FOLDER)
     labels = util.cluster_user_data(sample_data['user_data'])
     return render_template('index.html', labels_html=labels, column_html=column_names, data_html=sample_data['user_data'])
-
-def parseCSV(filePath):
-      # CVS Column Names
-      col_names = ['index','What country do you live in?','How old are you?', 'What is your gender?', 'To what extent do you feel FEAR due to the coronavirus?' , 'To what extent do you feel ANXIOUS due to the coronavirus?', 'To what extent do you feel ANGRY due to the coronavirus?','To what extent do you feel HAPPY due to the coronavirus?','To what extent do you feel SAD due to the coronavirus?','Which emotion is having the biggest impact on you?','What makes you feel that way?','What brings you the most meaning during the coronavirus outbreak?','What is your occupation?']
-      # Use Pandas to parse the CSV file
-      csvData = pd.read_csv(filePath,names=col_names, header=None)
-      # Loop through the Rows
-      #for i,row in csvData.iterrows():
-        #print(i,row['index'],row['What country do you live in?'],row['How old are you?'],row['What is your gender?'],row['To what extent do you feel FEAR due to the coronavirus?'],row['To what extent do you feel ANXIOUS due to the coronavirus?'],row['To what extent do you feel ANGRY due to the coronavirus?'],row['To what extent do you feel HAPPY due to the coronavirus?'],row['To what extent do you feel SAD due to the coronavirus?'],row['Which emotion is having the biggest impact on you?'],row['What makes you feel that way?'],row['What brings you the most meaning during the coronavirus outbreak?'],row['What is your occupation?'])
 
 if __name__ == '__main__':
 	# set debug mode
