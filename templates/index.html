@@ -3,39 +3,74 @@
 <html>
 
 <head>
-    <title>Upload a CSV File</title>
+    <title>We Are Not Alone</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.7/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+    <style>
+        table {
+            width: 100%;
+            overflow-y:scroll;
+            height:500px;
+        }
+
+
+
+        td {
+
+
+
+            padding-left: 10px;
+        }
+
+        table,  th {
+            border: 1px solid black;
+
+
+
+        }
+
+        th {
+            background-color: lightblue;
+            color: black;
+            text-align: left;
+            padding-left: 10px;
+        }
+
+        tr:nth-child(even) {background-color: lightgray;}
+
+
+
+    </style>
 </head>
 
 
 <body>
-<h1>Show user data from backend</h1>
 <!-- <p>{{column_names}}</p>
 <p>{{data_part}}</p> -->
-
-<table class="table">
-    <thead>
-    <tr>
-        {% for item in column_html %}
-        <th>{{item}}</th>
-        {% endfor %}
-    </tr>
-    </thead>
-    <tbody>
-    {% for row in data_html %}
-    <tr>
-        {% for data in row %}
-        <td>{{ data }}</td>
-        {% endfor %}
-    </tr>
+    {% for table_object in data_html %}
+        <h1>{{table_object['title']}}</h1>
+    <table style="width:100%; border:1px; overflow-y:scroll; height:500px; display:block;">
+            <thead>
+            <tr>
+                {% for item in column_html %}
+                <th>{{item}}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in table_object['data'] %}
+            <tr>
+                {% for data in row %}
+                <td>{{ data }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </tbody>
+    </table>
     {% endfor %}
-    </tbody>
-</table>
-
-
 </body>
 </html>

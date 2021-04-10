@@ -164,6 +164,47 @@ def create_table(folder_of_files):
 
 @app.route('/')
 def index():
+    list_of_tables = [
+        {
+            "title": "All User Data"
+        },
+        {
+            "title": "Young Male Data"
+        },
+        {
+            "title": "Middle-Aged or Old Male Data"
+        },
+        {
+            "title": "Young Female Data"
+        },
+        {
+            "title": "Middle-Aged or Old Female Data"
+        },
+        {
+            "title": "Young Male Data USA"
+        },
+        {
+            "title": "Young Male Data Canada"
+        },
+        {
+            "title": "Middle-Aged or Old Male Data USA"
+        },
+        {
+            "title": "Middle-Aged or Old Male Data Canada"
+        },
+        {
+            "title": "Young Female Data USA"
+        },
+        {
+            "title": "Young Female Data Canada"
+        },
+        {
+            "title": "Middle-Aged or Old Female Data USA"
+        },
+        {
+            "title": "Middle-Aged or Old Female Data Canada"
+        },
+    ]
     #Calling function, argument is path of folder where all CSV files are stored
     create_table(UPLOAD_FOLDER)
 
@@ -172,6 +213,7 @@ def index():
         con=engine
     )
     full_data = table_df.values
+    list_of_tables[0]["data"] = full_data
 
     young_male_query = "select * from we_are_not_alone_no_nan where \"How old are you?\" <= 35 AND \"What is your gender?\" = \"Male\""
     young_male_df = pd.read_sql(
@@ -179,8 +221,115 @@ def index():
             con=engine
         )
     young_male_data = young_male_df.values
-    labels = util.cluster_user_data(young_male_data)
-    return render_template('index.html', labels_html=labels, column_html=column_names, data_html=young_male_data)
+    labels = util.cluster_user_data(full_data)
+    list_of_tables[1]["data"] = young_male_data
+
+    middle_aged_or_old_male_query = "select * from we_are_not_alone_no_nan where \"How old are you?\" >=36 AND \"What is your gender?\" = \"Male\""
+    middle_aged_or_old_male_df = pd.read_sql(
+            middle_aged_or_old_male_query,
+            con=engine
+        )
+    middle_aged_or_old_male_data = middle_aged_or_old_male_df.values
+    list_of_tables[2]["data"] = middle_aged_or_old_male_data
+
+    young_female_query = "select * from we_are_not_alone_no_nan where \"How old are you?\" <= 35 AND \"What is your gender?\" = \"Female\""
+    young_female_df = pd.read_sql(
+            young_female_query,
+            con=engine
+        )
+    young_female_data = young_female_df.values
+    list_of_tables[3]["data"] = young_female_data
+
+    middle_aged_or_old_female_query = "select * from we_are_not_alone_no_nan where \"How old are you?\" >=36 AND \"What is your gender?\" = \"Female\""
+    middle_aged_or_old_female_df = pd.read_sql(
+            middle_aged_or_old_female_query,
+            con=engine
+        )
+    middle_aged_or_old_female_data = middle_aged_or_old_female_df.values
+    list_of_tables[4]["data"] = middle_aged_or_old_female_data
+
+    young_male_usa_query = "select * from we_are_not_alone_no_nan where \"How old are you?\" <= 35 AND \"What is your gender?\" = \"Male\" AND \"What country do you live in?\" = \"USA\""
+    young_male_usa_df = pd.read_sql(
+            young_male_usa_query,
+            con=engine
+        )
+    young_male_usa_data = young_male_usa_df.values
+    list_of_tables[5]["data"] = young_male_usa_data
+
+    young_male_can_query = "select * from we_are_not_alone_no_nan where \"How old are you?\" <= 35 AND \"What is your gender?\" = \"Male\" AND \"What country do you live in?\" = \"Canada\""
+    young_male_can_df = pd.read_sql(
+            young_male_can_query,
+            con=engine
+        )
+    young_male_can_data = young_male_can_df.values
+    list_of_tables[6]["data"] = young_male_can_data
+
+    middle_aged_or_old_male_usa_query = "select * from we_are_not_alone_no_nan where \"How old are you?\" >=36 AND \"What is your gender?\" = \"Male\" AND \"What country do you live in?\" = \"USA\""
+    middle_aged_or_old_male_usa_df = pd.read_sql(
+            middle_aged_or_old_male_usa_query,
+            con=engine
+        )
+    middle_aged_or_old_male_usa_data = middle_aged_or_old_male_usa_df.values
+    list_of_tables[7]["data"] = middle_aged_or_old_male_usa_data
+
+    middle_aged_or_old_male_can_query = "select * from we_are_not_alone_no_nan where \"How old are you?\" >=36 AND \"What is your gender?\" = \"Male\" AND \"What country do you live in?\" = \"Canada\""
+    middle_aged_or_old_male_can_df = pd.read_sql(
+            middle_aged_or_old_male_can_query,
+            con=engine
+        )
+    middle_aged_or_old_male_can_data = middle_aged_or_old_male_can_df.values
+    list_of_tables[8]["data"] = middle_aged_or_old_male_can_data
+
+    young_female_usa_query = "select * from we_are_not_alone_no_nan where \"How old are you?\" <= 35 AND \"What is your gender?\" = \"Female\" AND \"What country do you live in?\" = \"USA\""
+    young_female_usa_df = pd.read_sql(
+            young_female_usa_query,
+            con=engine
+        )
+    young_female_usa_data = young_female_usa_df.values
+    list_of_tables[9]["data"] = young_female_usa_data
+
+    young_female_can_query = "select * from we_are_not_alone_no_nan where \"How old are you?\" <= 35 AND \"What is your gender?\" = \"Female\" AND \"What country do you live in?\" = \"Canada\""
+    young_female_can_df = pd.read_sql(
+            young_female_can_query,
+            con=engine
+        )
+    young_female_can_data = young_female_can_df.values
+    list_of_tables[10]["data"] = young_female_can_data
+
+    middle_aged_or_old_female_usa_query = "select * from we_are_not_alone_no_nan where \"How old are you?\" >=36 AND \"What is your gender?\" = \"Female\" AND \"What country do you live in?\" = \"USA\""
+    middle_aged_or_old_female_usa_df = pd.read_sql(
+            middle_aged_or_old_female_usa_query,
+            con=engine
+        )
+    middle_aged_or_old_female_usa_data = middle_aged_or_old_female_usa_df.values
+    list_of_tables[11]["data"] = middle_aged_or_old_female_usa_data
+
+    middle_aged_or_old_female_can_query = "select * from we_are_not_alone_no_nan where \"How old are you?\" >=36 AND \"What is your gender?\" = \"Female\" AND \"What country do you live in?\" = \"Canada\""
+    middle_aged_or_old_female_can_df = pd.read_sql(
+            middle_aged_or_old_female_can_query,
+            con=engine
+        )
+    middle_aged_or_old_female_can_data = middle_aged_or_old_female_can_df.values
+    list_of_tables[12]["data"] = middle_aged_or_old_female_can_data
+
+    for item in list_of_tables[5: ]:
+        if len(item["data"]) > 10:
+
+            labels = util.cluster_user_data(item["data"])
+
+            groups = util.split_user_data(item["data"], labels)
+
+            for i, table in enumerate(groups):
+                dict = {
+                    "title": "%s KMeans Split #%d" % (item["title"], i+1),
+                    "data": []
+                }
+                dict["data"] = table
+                print(type(table))
+                print(table)
+                list_of_tables += [dict]
+
+    return render_template('index.html', labels_html=labels, column_html=column_names, data_html=list_of_tables)
 
 if __name__ == '__main__':
 	# set debug mode
