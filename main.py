@@ -325,8 +325,6 @@ def index():
                     "data": []
                 }
                 dict["data"] = table
-                print(type(table))
-                print(table)
                 list_of_tables += [dict]
 
     return render_template('index.html', labels_html=labels, column_html=column_names, data_html=list_of_tables)
